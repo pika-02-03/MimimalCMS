@@ -3,6 +3,7 @@
     <section>
         <!-- Image upload form !-->
         <form action="/image/store" method="POST" enctype="multipart/form-data">
+            <?php csrfField() ?>
             <label for="file">Choose a file:</label>
             <input type="file" name="file" id="file">
             <label>Image Type:</label>

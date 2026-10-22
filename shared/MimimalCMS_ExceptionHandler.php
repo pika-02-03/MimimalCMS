@@ -96,6 +96,17 @@ class ExceptionHandler
     private static function response500(\Throwable $e, bool $log = true)
     {
         self::errorResponse($e, 'please try again later', 500, $log, 'Internal Server Error😥');
+
+        // Optional hook: lets the application report unhandled exceptions (chat notification, etc.).
+        // Define `public static function reportUnhandledException(\Throwable $e)` on ApplicationExceptionHandler.
+        $appHandlerClass = ApplicationExceptionHandler::class;
+        if (class_exists($appHandlerClass) && method_exists($appHandlerClass, 'reportUnhandledException')) {
+            try {
+                $appHandlerClass::reportUnhandledException($e);
+            } catch (\Throwable $exception) {
+                self::errorLog($exception);
+            }
+        }
     }
 
     /**
@@ -225,8 +236,11 @@ class ExceptionHandler
             $e->getTraceAsString()
         );
 
-        // Get request headers as string
+        // Get request headers as string (credentials such as cookies and auth headers are masked)
         $headerString = implode("\n", array_map(function ($key, $val) {
+            if (self::isSensitiveServerKey((string)$key)) {
+                return "{$key}: [masked]";
+            }
             if (!is_string($val)) {
                 $val = var_export($val, true);
             }
@@ -246,6 +260,15 @@ class ExceptionHandler
         } catch (\Throwable $e) {
             return;
         }
+    }
+
+    /**
+     * Whether a $_SERVER key may hold a credential (cookies, auth headers, CSRF tokens,
+     * and environment variables such as DB_PASSWORD or API_KEY) and must not be written to the log.
+     */
+    private static function isSensitiveServerKey(string $key): bool
+    {
+        return (bool)preg_match('/COOKIE|AUTH|PASS|SECRET|TOKEN|KEY|CREDENTIAL|SESSION/i', $key);
     }
 
     private static function jsonResponse(array $data)

@@ -1,0 +1,8 @@
+# Left out of the Composer package (the sample app and tests stay in the repository only)
+/.claude export-ignore
+/.htaccess export-ignore
+/app export-ignore
+/logs export-ignore
+/public export-ignore
+/tests export-ignore
+/phpunit.xml.dist export-ignore

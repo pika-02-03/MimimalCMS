@@ -30,6 +30,10 @@ class MimimalCmsConfig
     public static bool $cookieDefaultHttpOnly = true;
     public static string $cookieDefaultSameSite = 'lax';
 
+    // Proxy headers that getIP() may trust, e.g. ['HTTP_CF_CONNECTING_IP'] behind Cloudflare.
+    // Leave empty unless every request goes through that proxy (clients can send these headers themselves).
+    public static array $trustedIpHeaders = [];
+
     // Options for session
     public static string $flashSessionKeyName = 'mimimalFlashSession';
     public static string $sessionKeyName = 'mimimalSession';
