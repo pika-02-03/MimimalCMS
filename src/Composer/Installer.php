@@ -8,10 +8,12 @@ namespace MimimalCMS\Composer;
  * Copies the MimimalCMS framework files from vendor/ into the project, keeping the same layout
  * as this repository (shadow/, shared/MimimalCMS_*.php, shared/Exceptions/).
  *
- * The project commits the copied files and runs them from there, so production needs nothing from vendor/.
+ * The project runs the copies, not vendor/. Usually the copies are git-ignored and created by `composer install`;
+ * a project that does not run composer in production can commit them instead (then post-update-cmd alone is enough).
  * Add to the project's composer.json:
  *
  *     "scripts": {
+ *         "post-install-cmd": ["MimimalCMS\\Composer\\Installer::sync"],
  *         "post-update-cmd": ["MimimalCMS\\Composer\\Installer::sync"],
  *         "mimimalcms-sync": "MimimalCMS\\Composer\\Installer::sync",
  *         "mimimalcms-check": "MimimalCMS\\Composer\\Installer::check"

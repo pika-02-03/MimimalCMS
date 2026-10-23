@@ -8,14 +8,14 @@
 
 ## 導入（Composer）
 
-フレームワークは `vendor/` から動かすのではなく、**プロジェクトにコピーしてコミットする**方式です。本番は `vendor/` を参照しないので、
-`require-dev` で入れれば十分です。
+フレームワークは `vendor/` ではなく、プロジェクト直下へ同じ配置でコピーして使います（Drupal の `core/` と同じ考え方）。
+コピーは composer が作るので、普通は `.gitignore` に入れておけば十分です。
 
 ```jsonc
 // composer.json
 {
     "repositories": [{ "type": "vcs", "url": "https://github.com/pika-02-03/MimimalCMS" }],
-    "require-dev": { "pika-02-03/mimimalcms": "^1.1" },
+    "require": { "pika-02-03/mimimalcms": "^1.1" },
     "autoload": {
         "psr-4": { "Shadow\\": "shadow/", "Shared\\": "shared/", "App\\": "app/" },
         "files": [
@@ -26,6 +26,7 @@
         ]
     },
     "scripts": {
+        "post-install-cmd": ["MimimalCMS\\Composer\\Installer::sync"],
         "post-update-cmd": ["MimimalCMS\\Composer\\Installer::sync"],
         "mimimalcms-sync": "MimimalCMS\\Composer\\Installer::sync",
         "mimimalcms-check": "MimimalCMS\\Composer\\Installer::check"
@@ -33,16 +34,29 @@
 }
 ```
 
-`composer update pika-02-03/mimimalcms` でフレームワークのファイルがプロジェクトへコピーされます（変わったファイルだけ書き換えるので、2回目以降は差分が出ない）。
+```gitignore
+# .gitignore（composer install で作られるフレームワークのコピー）
+/vendor/
+/shadow/
+/shared/Exceptions/
+/shared/MimimalCMS_Enums.php
+/shared/MimimalCMS_ExceptionHandler.php
+/shared/MimimalCMS_HelperFunctions.php
+```
+
+`composer install`（本番は `composer install --no-dev`）のたびにフレームワークのファイルがコピーされます（変わったファイルだけ書き換える）。
 
 | パス | 持ち主 | コピー時の扱い |
 |---|---|---|
 | `shadow/` | フレームワーク | 丸ごと同期（パッケージから消えたファイルは削除） |
 | `shared/MimimalCMS_{Enums,ExceptionHandler,HelperFunctions}.php`・`shared/Exceptions/` | フレームワーク | 上書き |
-| `shared/MimimalCmsConfig.php`・`shared/MimimalCMS_Settings.php` | アプリ | 無いときだけ雛形を置く（以後は触らない） |
+| `shared/MimimalCmsConfig.php`・`shared/MimimalCMS_Settings.php` | アプリ | 無いときだけ雛形を置く（以後は触らない。コミットする） |
 
-フレームワークを直すときはこのリポジトリで直してタグを打ち、プロジェクト側で `composer update` する。コピー先を直接編集しても次の同期で戻る。
+更新は `composer update pika-02-03/mimimalcms`。フレームワークを直すときはこのリポジトリで直してタグを打つ（コピー先を直接編集しても次の同期で戻る）。
 `composer mimimalcms-check` はコピー先がパッケージと一致しているかを確認する（違えば失敗する）。
+
+本番で composer を動かさない場合は、コピーもコミットして使える（[オプチャグラフ](https://github.com/Open-Chat-Graph/Open-Chat-Graph)はこの形）。
+`.gitignore` からフレームワークの行を外し、パッケージは `require-dev`、スクリプトは `post-update-cmd` だけでよい（本番は `vendor/` のフレームワークを読まない）。
 
 ## ページを作る
 

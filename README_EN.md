@@ -8,14 +8,14 @@ Used by: [OpenChat Graph](https://openchat-review.me) ([source](https://github.c
 
 ## Installation (Composer)
 
-The framework is **copied into your project and committed**, not run from `vendor/`. Production never reads `vendor/`
-for it, so `require-dev` is enough.
+The framework runs from a copy in your project root with the same layout, not from `vendor/` (the same idea as Drupal's `core/`).
+Composer creates the copy, so normally you just add it to `.gitignore`.
 
 ```jsonc
 // composer.json
 {
     "repositories": [{ "type": "vcs", "url": "https://github.com/pika-02-03/MimimalCMS" }],
-    "require-dev": { "pika-02-03/mimimalcms": "^1.1" },
+    "require": { "pika-02-03/mimimalcms": "^1.1" },
     "autoload": {
         "psr-4": { "Shadow\\": "shadow/", "Shared\\": "shared/", "App\\": "app/" },
         "files": [
@@ -26,6 +26,7 @@ for it, so `require-dev` is enough.
         ]
     },
     "scripts": {
+        "post-install-cmd": ["MimimalCMS\\Composer\\Installer::sync"],
         "post-update-cmd": ["MimimalCMS\\Composer\\Installer::sync"],
         "mimimalcms-sync": "MimimalCMS\\Composer\\Installer::sync",
         "mimimalcms-check": "MimimalCMS\\Composer\\Installer::check"
@@ -33,16 +34,29 @@ for it, so `require-dev` is enough.
 }
 ```
 
-`composer update pika-02-03/mimimalcms` copies the framework files into the project (only changed files are written, so a second run changes nothing).
+```gitignore
+# .gitignore (framework copy created by composer install)
+/vendor/
+/shadow/
+/shared/Exceptions/
+/shared/MimimalCMS_Enums.php
+/shared/MimimalCMS_ExceptionHandler.php
+/shared/MimimalCMS_HelperFunctions.php
+```
+
+Every `composer install` (`composer install --no-dev` in production) copies the framework files into the project (only changed files are written).
 
 | Path | Owner | On sync |
 |---|---|---|
 | `shadow/` | framework | mirrored (files removed from the package are deleted) |
 | `shared/MimimalCMS_{Enums,ExceptionHandler,HelperFunctions}.php`, `shared/Exceptions/` | framework | overwritten |
-| `shared/MimimalCmsConfig.php`, `shared/MimimalCMS_Settings.php` | application | stub created only if missing, never touched afterwards |
+| `shared/MimimalCmsConfig.php`, `shared/MimimalCMS_Settings.php` | application | stub created only if missing, never touched afterwards (commit them) |
 
-Fix the framework in this repository, tag a release, then run `composer update` in the project. Edits made to the copies are reverted by the next sync.
+Upgrade with `composer update pika-02-03/mimimalcms`. To change the framework, fix it in this repository and tag a release (edits made to the copies are reverted by the next sync).
 `composer mimimalcms-check` fails when the copies differ from the installed package.
+
+If production does not run composer, you can commit the copies instead ([OpenChat Graph](https://github.com/Open-Chat-Graph/Open-Chat-Graph) does this).
+Drop the framework lines from `.gitignore`, put the package in `require-dev`, and `post-update-cmd` alone is enough (production never reads the framework from `vendor/`).
 
 ## Pages
 
