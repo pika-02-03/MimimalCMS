@@ -49,11 +49,13 @@ Every `composer install` (`composer install --no-dev` in production) copies the 
 | Path | Owner | On sync |
 |---|---|---|
 | `shadow/` | framework | mirrored (files removed from the package are deleted) |
-| `shared/MimimalCMS_{Enums,ExceptionHandler,HelperFunctions}.php`, `shared/Exceptions/` | framework | overwritten |
+| `shared/MimimalCMS_{Enums,ExceptionHandler,HelperFunctions}.php`, `shared/Exceptions/` | framework | overwritten (don't put your own exceptions in `shared/Exceptions/`) |
 | `shared/MimimalCmsConfig.php`, `shared/MimimalCMS_Settings.php` | application | stub created only if missing, never touched afterwards (commit them) |
 
 Upgrade with `composer update pika-02-03/mimimalcms`. To change the framework, fix it in this repository and tag a release (edits made to the copies are reverted by the next sync).
 `composer mimimalcms-check` fails when the copies differ from the installed package.
+After `composer install --no-scripts`, create the copies with `composer mimimalcms-sync`. If you optimize the autoloader with `-a` (`--classmap-authoritative`) or `-o`,
+run `composer dump-autoload -a` (`-o`) again after install: the classmap is built before the copies exist, so with `-a` the framework classes are missing on the first install.
 
 If production does not run composer, you can commit the copies instead ([OpenChat Graph](https://github.com/Open-Chat-Graph/Open-Chat-Graph) does this).
 Drop the framework lines from `.gitignore`, put the package in `require-dev`, and `post-update-cmd` alone is enough (production never reads the framework from `vendor/`).

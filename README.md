@@ -49,11 +49,13 @@
 | パス | 持ち主 | コピー時の扱い |
 |---|---|---|
 | `shadow/` | フレームワーク | 丸ごと同期（パッケージから消えたファイルは削除） |
-| `shared/MimimalCMS_{Enums,ExceptionHandler,HelperFunctions}.php`・`shared/Exceptions/` | フレームワーク | 上書き |
+| `shared/MimimalCMS_{Enums,ExceptionHandler,HelperFunctions}.php`・`shared/Exceptions/` | フレームワーク | 上書き（`shared/Exceptions/` にアプリの例外は置かない） |
 | `shared/MimimalCmsConfig.php`・`shared/MimimalCMS_Settings.php` | アプリ | 無いときだけ雛形を置く（以後は触らない。コミットする） |
 
 更新は `composer update pika-02-03/mimimalcms`。フレームワークを直すときはこのリポジトリで直してタグを打つ（コピー先を直接編集しても次の同期で戻る）。
 `composer mimimalcms-check` はコピー先がパッケージと一致しているかを確認する（違えば失敗する）。
+`--no-scripts` で install したときは `composer mimimalcms-sync` でコピーを作る。autoload を `-a`（`--classmap-authoritative`）や `-o` で最適化するなら、
+install の後に `composer dump-autoload -a`（`-o`）をもう一度打つ（クラスマップはコピーより先に作られるので、`-a` だと初回はフレームワークのクラスが見つからない）。
 
 本番で composer を動かさない場合は、コピーもコミットして使える（[オプチャグラフ](https://github.com/Open-Chat-Graph/Open-Chat-Graph)はこの形）。
 `.gitignore` からフレームワークの行を外し、パッケージは `require-dev`、スクリプトは `post-update-cmd` だけでよい（本番は `vendor/` のフレームワークを読まない）。
